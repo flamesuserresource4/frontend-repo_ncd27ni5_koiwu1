@@ -13,10 +13,10 @@ import CursorGlow from './components/CursorGlow'
 export default function App() {
   useEffect(() => {
     // Improve hover lighting effect coordinates for service cards
-    const container = document.getElementById('services')
-    const cards = document.querySelectorAll('#services .group')
-    const handler = (e) => {
-      cards.forEach((card) => {
+    const servicesContainer = document.getElementById('services')
+    const serviceCards = document.querySelectorAll('#services .group')
+    const servicesHandler = (e) => {
+      serviceCards.forEach((card) => {
         const rect = card.getBoundingClientRect()
         const x = ((e.clientX - rect.left) / rect.width) * 100
         const y = ((e.clientY - rect.top) / rect.height) * 100
@@ -24,8 +24,26 @@ export default function App() {
         card.style.setProperty('--y', `${y}%`)
       })
     }
-    if (container) container.addEventListener('mousemove', handler)
-    return () => container && container.removeEventListener('mousemove', handler)
+    if (servicesContainer) servicesContainer.addEventListener('mousemove', servicesHandler)
+
+    // Story spotlight coordinates for radial accent
+    const storyContainer = document.getElementById('story')
+    const storyItems = () => Array.from(document.querySelectorAll('#story li.group'))
+    const storyHandler = (e) => {
+      storyItems().forEach((item) => {
+        const rect = item.getBoundingClientRect()
+        const x = ((e.clientX - rect.left) / rect.width) * 100
+        const y = ((e.clientY - rect.top) / rect.height) * 100
+        item.style.setProperty('--mx', `${x}%`)
+        item.style.setProperty('--my', `${y}%`)
+      })
+    }
+    if (storyContainer) storyContainer.addEventListener('mousemove', storyHandler)
+
+    return () => {
+      servicesContainer && servicesContainer.removeEventListener('mousemove', servicesHandler)
+      storyContainer && storyContainer.removeEventListener('mousemove', storyHandler)
+    }
   }, [])
 
   return (
