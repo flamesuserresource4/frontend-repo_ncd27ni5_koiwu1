@@ -2,6 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import Spline from '@splinetool/react-spline'
 import Particles from './Particles'
+import MagneticButton from './MagneticButton'
 
 export default function Hero() {
   return (
@@ -42,18 +43,24 @@ export default function Hero() {
           transition={{ duration: 0.8, ease: 'easeOut', delay: 0.25 }}
           className="mt-8 flex flex-col items-center gap-4 sm:flex-row"
         >
-          <a
-            href="#story"
-            className="rounded-full bg-[#0ea5e9] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-300"
-          >
-            Explore the Work
-          </a>
-          <a
-            href="#contact"
-            className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white/90 backdrop-blur transition hover:border-white/40 hover:text-white"
-          >
-            Start a Project
-          </a>
+          <div className="group">
+            <MagneticButton
+              As="a"
+              href="#story"
+              className="rounded-full bg-[#0ea5e9] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 hover:bg-sky-400"
+            >
+              Explore the Work
+            </MagneticButton>
+          </div>
+          <div className="group">
+            <MagneticButton
+              As="a"
+              href="#contact"
+              className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white/90 backdrop-blur hover:border-white/40 hover:text-white"
+            >
+              Start a Project
+            </MagneticButton>
+          </div>
         </motion.div>
 
         {/* Scroll Indicator */}
