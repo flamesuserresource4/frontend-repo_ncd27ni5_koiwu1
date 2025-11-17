@@ -6,14 +6,30 @@ export default function Marquee({ items = [], speed = 40 }) {
   useEffect(() => {
     const el = ref.current
     if (!el) return
+
+    // Respect reduced motion
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (reduce.matches) return
+
+    // Prefetch: create an off-DOM clone to warm layout and fonts
+    const pre = document.createElement('div')
+    pre.style.visibility = 'hidden'
+    pre.style.position = 'absolute'
+    pre.style.top = '-9999px'
+    pre.textContent = items.join(' • ')
+    document.body.appendChild(pre)
+    requestIdleCallback?.(() => pre.remove())
+
+    let raf
+    const pxPerFrame = Math.max(0.5, speed / 60)
     const animate = () => {
-      el.scrollLeft += 1
+      el.scrollLeft += pxPerFrame
       if (el.scrollLeft >= el.scrollWidth / 2) el.scrollLeft = 0
-      requestAnimationFrame(animate)
+      raf = requestAnimationFrame(animate)
     }
-    let id = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(id)
-  }, [])
+    raf = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(raf)
+  }, [items, speed])
 
   const content = [...items, ...items]
 

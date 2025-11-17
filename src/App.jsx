@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Hero from './components/Hero'
 import Story from './components/Story'
 import Services from './components/Services'
@@ -11,6 +11,31 @@ import BackgroundFX from './components/BackgroundFX'
 import CursorGlow from './components/CursorGlow'
 
 export default function App() {
+  const [theme, setTheme] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('motion-theme') : null
+    return saved === 'lux' || saved === 'ultra' ? saved : 'ultra'
+  })
+
+  useEffect(() => {
+    // Apply motion theme to document for global CSS vars
+    const root = document.documentElement
+    root.dataset.theme = theme
+    if (theme === 'ultra') {
+      root.style.setProperty('--glow', '0.65')
+      root.style.setProperty('--grid', '0.06')
+      root.style.setProperty('--cursor-glow-alpha', '0.18')
+      root.style.setProperty('--motion-amp', '1')
+    } else {
+      root.style.setProperty('--glow', '0.35')
+      root.style.setProperty('--grid', '0.02')
+      root.style.setProperty('--cursor-glow-alpha', '0.10')
+      root.style.setProperty('--motion-amp', '0.55')
+    }
+    localStorage.setItem('motion-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme((t) => (t === 'ultra' ? 'lux' : 'ultra'))
+
   useEffect(() => {
     // Improve hover lighting effect coordinates for service cards
     const servicesContainer = document.getElementById('services')
@@ -50,7 +75,7 @@ export default function App() {
     <main className="relative min-h-screen w-full bg-[#0b0c0f]">
       <CursorGlow />
       <BackgroundFX />
-      <Navbar />
+      <Navbar theme={theme} onToggleTheme={toggleTheme} />
       <Hero />
       <Marquee items={[
         'Product design', 'Web apps', 'Design systems', 'Motion', 'Brand', 'Ecommerce', 'Platforms', 'SaaS', 'Mobile', 'WebGL'

@@ -7,6 +7,7 @@ import MagneticButton from './MagneticButton'
 export default function Hero() {
   const containerRef = useRef(null)
   const [wordIndex, setWordIndex] = useState(0)
+  const [showSpline, setShowSpline] = useState(false)
   const words = ['Limitless', 'Boundless', 'Futuristic']
 
   useEffect(() => {
@@ -19,8 +20,9 @@ export default function Hero() {
       const rect = el.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
-      const cx = x / rect.width - 0.5
-      const cy = y / rect.height - 0.5
+      const amp = Number(getComputedStyle(document.documentElement).getPropertyValue('--motion-amp') || '1')
+      const cx = (x / rect.width - 0.5) * amp
+      const cy = (y / rect.height - 0.5) * amp
       el.style.setProperty('--mx', String(cx))
       el.style.setProperty('--my', String(cy))
       el.style.setProperty('--px', x + 'px')
@@ -38,11 +40,32 @@ export default function Hero() {
     return () => clearInterval(id)
   }, [])
 
+  // Performance: defer heavy Spline until first idle or intersection
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => setShowSpline(true))
+          } else {
+            setTimeout(() => setShowSpline(true), 200)
+          }
+          observer.disconnect()
+        }
+      })
+    }, { rootMargin: '200px' })
+
+    if (containerRef.current) observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <section ref={containerRef} className="relative min-h-screen w-full overflow-hidden bg-[#0b0c0f] text-white">
-      {/* Spline Background Cover */}
-      <div className="absolute inset-0">
-        <Spline scene="https://prod.spline.design/BWzdo650n-g-M9RS/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+      {/* Spline Background Cover (deferred) */}
+      <div className="absolute inset-0" aria-hidden>
+        {showSpline && (
+          <Spline scene="https://prod.spline.design/BWzdo650n-g-M9RS/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+        )}
       </div>
 
       {/* Ultra glow and kinetic mask layer */}
@@ -51,7 +74,7 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(600px 600px at var(--px,-200px) var(--py,-200px), rgba(14,165,233,0.18), transparent 60%), radial-gradient(900px 900px at 20% 10%, rgba(99,102,241,0.10), transparent 60%)',
+            'radial-gradient(600px_600px_at_var(--px,-200px)_var(--py,-200px), rgba(14,165,233,calc(var(--cursor-glow-alpha,0.18))), transparent_60%), radial-gradient(900px_900px_at_20%_10%, rgba(99,102,241,0.10), transparent_60%)',
           mixBlendMode: 'screen',
           transition: 'background-position 100ms linear',
         }}
@@ -63,11 +86,11 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0"
         style={{
           WebkitMaskImage:
-            'radial-gradient(180px 180px at var(--px,-200px) var(--py,-200px), rgba(0,0,0,1), rgba(0,0,0,0.0) 60%)',
+            'radial-gradient(180px_180px_at_var(--px,-200px)_var(--py,-200px), rgba(0,0,0,1), rgba(0,0,0,0.0)_60%)',
           maskImage:
-            'radial-gradient(180px 180px at var(--px,-200px) var(--py,-200px), rgba(0,0,0,1), rgba(0,0,0,0.0) 60%)',
+            'radial-gradient(180px_180px_at_var(--px,-200px)_var(--py,-200px), rgba(0,0,0,1), rgba(0,0,0,0.0)_60%)',
           background:
-            'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.35), transparent 60%)',
+            'radial-gradient(circle_at_50%_50%, rgba(255,255,255,0.35), transparent_60%)',
           mixBlendMode: 'overlay',
           opacity: 0.7,
           transition: 'mask-position 100ms linear',
@@ -83,7 +106,7 @@ export default function Hero() {
         <motion.div
           style={{
             transform:
-              'translate3d(calc(var(--mx,0) * -12px), calc(var(--my,0) * -12px), 0)'
+              'translate3d(calc(var(--mx,0)*-12px), calc(var(--my,0)*-12px), 0)'
           }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -106,7 +129,7 @@ export default function Hero() {
                   className="inline-block bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-400 bg-clip-text text-5xl font-extrabold text-transparent sm:text-6xl md:text-7xl"
                   style={{
                     textShadow: '0 0 32px rgba(14,165,233,0.25)',
-                    filter: 'drop-shadow(0 6px 24px rgba(14,165,233,0.25))',
+                    filter: 'drop-shadow(0_6px_24px_rgba(14,165,233,0.25))',
                   }}
                 >
                   {words[wordIndex]}
@@ -132,7 +155,7 @@ export default function Hero() {
           className="mt-9 flex flex-col items-center gap-4 sm:flex-row"
           style={{
             transform:
-              'translate3d(calc(var(--mx,0) * -6px), calc(var(--my,0) * -6px), 0)'
+              'translate3d(calc(var(--mx,0)*-6px), calc(var(--my,0)*-6px), 0)'
           }}
         >
           <div className="group">

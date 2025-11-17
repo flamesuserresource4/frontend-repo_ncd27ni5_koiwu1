@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 
 // Full-screen, GPU-friendly cursor-follow glow with accessibility and user-preference respect
-export default function CursorGlow({ color = 'rgba(14,165,233,0.18)' }) {
+export default function CursorGlow({ color = '14,165,233' }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -22,13 +22,16 @@ export default function CursorGlow({ color = 'rgba(14,165,233,0.18)' }) {
     return () => window.removeEventListener('pointermove', move)
   }, [])
 
+  // Use CSS variable for alpha so theme can control intensity
+  const alpha = getComputedStyle(document.documentElement).getPropertyValue('--cursor-glow-alpha') || '0.18'
+
   return (
     <div
       ref={ref}
       aria-hidden
       className="pointer-events-none fixed inset-0 z-[5] mix-blend-screen"
       style={{
-        background: `radial-gradient(180px 180px at var(--x, -200px) var(--y, -200px), ${color}, transparent 60%)`,
+        background: `radial-gradient(180px_180px_at_var(--x,_-200px)_var(--y,_-200px), rgba(${color}, ${alpha}), transparent_60%)`,
         transition: 'background-position 120ms linear',
       }}
     />

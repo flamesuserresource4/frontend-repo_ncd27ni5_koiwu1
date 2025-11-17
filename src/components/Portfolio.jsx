@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const allProjects = [
@@ -15,20 +15,57 @@ const tags = ['All', 'Web', 'App', 'Brand']
 export default function Portfolio() {
   const [filter, setFilter] = useState('All')
   const [active, setActive] = useState(null)
+  const closeBtnRef = useRef(null)
+  const dialogRef = useRef(null)
   const projects = useMemo(() => (filter === 'All' ? allProjects : allProjects.filter(p => p.tag === filter)), [filter])
+
+  // a11y: focus trap and Esc close
+  useEffect(() => {
+    if (!active) return
+    const dialog = dialogRef.current
+    const closeBtn = closeBtnRef.current
+    const prev = document.activeElement
+    closeBtn?.focus()
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setActive(null)
+      } else if (e.key === 'Tab') {
+        const focusables = dialog?.querySelectorAll('a,button,input,textarea,select,[tabindex]:not([tabindex="-1"])')
+        if (!focusables || focusables.length === 0) return
+        const first = focusables[0]
+        const last = focusables[focusables.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus()
+        }
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      if (prev && prev.focus) prev.focus()
+    }
+  }, [active])
 
   return (
     <section id="portfolio" className="bg-[#0b0c0f] py-24 text-white">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-2xl font-semibold text-white/90 sm:text-3xl">Selected Work</h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="tablist" aria-label="Filter projects">
             {tags.map(t => (
               <button
                 key={t}
                 onClick={() => setFilter(t)}
+                role="tab"
+                aria-selected={filter === t}
+                aria-controls={`panel-${t}`}
+                id={`tab-${t}`}
                 className={`rounded-full border px-3 py-1 text-sm transition ${filter === t ? 'border-sky-400 text-sky-300' : 'border-white/15 text-white/70 hover:text-white hover:border-white/30'}`}
-                aria-pressed={filter === t}
               >
                 {t}
               </button>
@@ -36,7 +73,7 @@ export default function Portfolio() {
           </div>
         </div>
 
-        <div className="mt-10 columns-1 gap-6 sm:columns-2 lg:columns-3 [column-fill:_balance]">
+        <div className="mt-10 columns-1 gap-6 sm:columns-2 lg:columns-3 [column-fill:_balance]" role="region" aria-live="polite">
           <AnimatePresence>
             {projects.map((p, i) => (
               <motion.button
@@ -48,6 +85,8 @@ export default function Portfolio() {
                 transition={{ duration: 0.45, delay: (i % 6) * 0.03 }}
                 onClick={() => setActive(p)}
                 className="group relative mb-6 w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+                aria-haspopup="dialog"
+                aria-label={`Open details for ${p.title}`}
               >
                 <img src={p.img} alt={p.title} loading="lazy" decoding="async" className="max-h-[60vh] w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0b0c0f] via-transparent to-transparent" />
@@ -74,6 +113,7 @@ export default function Portfolio() {
             onClick={() => setActive(null)}
           >
             <motion.div
+              ref={dialogRef}
               onClick={(e) => e.stopPropagation()}
               initial={{ y: 20, scale: 0.98, opacity: 0 }}
               animate={{ y: 0, scale: 1, opacity: 1 }}
@@ -86,7 +126,7 @@ export default function Portfolio() {
                 <h3 className="text-xl font-semibold">{active.title}</h3>
                 <p className="mt-2 text-sm text-white/75">{active.tag} — Crafted with performance, accessibility, and motion principles.</p>
                 <div className="mt-6 flex justify-end gap-3">
-                  <button onClick={() => setActive(null)} className="rounded-md border border-white/20 px-3 py-1.5 text-sm text-white/80 hover:text-white hover:border-white/40">Close</button>
+                  <button ref={closeBtnRef} onClick={() => setActive(null)} className="rounded-md border border-white/20 px-3 py-1.5 text-sm text-white/80 hover:text-white hover:border-white/40">Close</button>
                   <a href="#" className="rounded-md bg-sky-500/20 px-3 py-1.5 text-sm text-sky-300 ring-1 ring-inset ring-sky-400/30 hover:bg-sky-500/30">View Case</a>
                 </div>
               </div>

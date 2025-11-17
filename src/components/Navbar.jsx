@@ -1,13 +1,16 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import { Sparkles } from 'lucide-react'
 
-export default function Navbar() {
+export default function Navbar({ theme = 'ultra', onToggleTheme = () => {} }) {
   const items = [
     { href: '#story', label: 'Story' },
     { href: '#services', label: 'Services' },
     { href: '#portfolio', label: 'Work' },
     { href: '#contact', label: 'Contact' },
   ]
+
+  const themeLabel = theme === 'ultra' ? 'Ultra‑Futuristic' : 'Minimal‑Lux'
 
   return (
     <motion.header
@@ -29,12 +32,25 @@ export default function Navbar() {
               </a>
             ))}
           </nav>
-          <a
-            href="#contact"
-            className="rounded-full bg-gradient-to-r from-sky-600 to-cyan-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-sky-500/20 hover:shadow-sky-500/30"
-          >
-            Start
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/80 outline-none transition hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-sky-400/70"
+              aria-pressed={theme === 'ultra'}
+              aria-label={`Toggle motion theme. Current: ${themeLabel}`}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-sky-300" aria-hidden />
+              <span className="hidden sm:inline">{themeLabel}</span>
+              <span className="sm:hidden">{theme === 'ultra' ? 'Ultra' : 'Lux'}</span>
+            </button>
+            <a
+              href="#contact"
+              className="rounded-full bg-gradient-to-r from-sky-600 to-cyan-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-sky-500/20 hover:shadow-sky-500/30"
+            >
+              Start
+            </a>
+          </div>
         </div>
       </div>
     </motion.header>
