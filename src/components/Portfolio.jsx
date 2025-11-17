@@ -14,6 +14,7 @@ const tags = ['All', 'Web', 'App', 'Brand']
 
 export default function Portfolio() {
   const [filter, setFilter] = useState('All')
+  const [active, setActive] = useState(null)
   const projects = useMemo(() => (filter === 'All' ? allProjects : allProjects.filter(p => p.tag === filter)), [filter])
 
   return (
@@ -27,6 +28,7 @@ export default function Portfolio() {
                 key={t}
                 onClick={() => setFilter(t)}
                 className={`rounded-full border px-3 py-1 text-sm transition ${filter === t ? 'border-sky-400 text-sky-300' : 'border-white/15 text-white/70 hover:text-white hover:border-white/30'}`}
+                aria-pressed={filter === t}
               >
                 {t}
               </button>
@@ -34,29 +36,65 @@ export default function Portfolio() {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 columns-1 gap-6 sm:columns-2 lg:columns-3 [column-fill:_balance]">
           <AnimatePresence>
             {projects.map((p, i) => (
-              <motion.article
+              <motion.button
                 key={p.id}
                 layout
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.45, delay: (i % 6) * 0.03 }}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                onClick={() => setActive(p)}
+                className="group relative mb-6 w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
               >
-                <img src={p.img} alt={p.title} className="h-56 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src={p.img} alt={p.title} loading="lazy" decoding="async" className="max-h-[60vh] w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0b0c0f] via-transparent to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-4">
                   <h3 className="text-lg font-semibold">{p.title}</h3>
                   <p className="text-xs text-white/70">{p.tag}</p>
                 </div>
-              </motion.article>
+              </motion.button>
             ))}
           </AnimatePresence>
         </div>
       </div>
+
+      <AnimatePresence>
+        {active && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={active.title}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-6"
+            onClick={() => setActive(null)}
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              initial={{ y: 20, scale: 0.98, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              exit={{ y: 10, scale: 0.98, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+              className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white/15 bg-zinc-900/80 backdrop-blur-sm"
+            >
+              <img src={active.img} alt="" className="h-80 w-full object-cover" />
+              <div className="p-6">
+                <h3 className="text-xl font-semibold">{active.title}</h3>
+                <p className="mt-2 text-sm text-white/75">{active.tag} — Crafted with performance, accessibility, and motion principles.</p>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button onClick={() => setActive(null)} className="rounded-md border border-white/20 px-3 py-1.5 text-sm text-white/80 hover:text-white hover:border-white/40">Close</button>
+                  <a href="#" className="rounded-md bg-sky-500/20 px-3 py-1.5 text-sm text-sky-300 ring-1 ring-inset ring-sky-400/30 hover:bg-sky-500/30">View Case</a>
+                </div>
+              </div>
+              <div aria-hidden className="pointer-events-none absolute inset-0 opacity-60 mix-blend-overlay" style={{ background: 'radial-gradient(50%_60%_at_50%_0%, rgba(14,165,233,0.25), transparent 70%)' }} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }
